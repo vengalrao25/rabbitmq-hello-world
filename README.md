@@ -5,6 +5,7 @@ RabbitMQ tutorials in Python. They use the `pika` library.
 | Folder | Tutorial |
 | --- | --- |
 | `tutorial-1-hello-world/` | Hello World |
+| `tutorial-2-work-queues/` | Work Queues |
 
 ## Tutorial 1: Hello World
 
@@ -53,3 +54,35 @@ python tutorial-1-hello-world/send.py
 ```
 
 The consumer shows ` [x] Received ...`. Press `CTRL+C` to stop it.
+
+## Tutorial 2: Work Queues
+
+```
+new_task.py  --->  queue "task_queue"  --->  worker.py (1)
+                                       --->  worker.py (2)
+```
+
+- `new_task.py` (producer): sends one task. Each `.` in the message means 1 second of work.
+- `worker.py` (consumer): does the task, then sends an ack.
+- **Round-robin:** RabbitMQ gives each task to one worker only. More workers do more tasks at the same time.
+- **Manual ack:** the worker sends the ack after the work is done. If a worker stops before the ack, RabbitMQ sends the task to a different worker.
+- **Fair dispatch:** `prefetch_count=1` gives a worker a new task only after it sends the ack for its last task.
+- **Durable:** `task_queue` is a quorum queue, so the tasks stay after a broker restart.
+
+## Run tutorial 2
+
+Terminal 1 and terminal 2 (workers):
+
+```bash
+python tutorial-2-work-queues/worker.py
+```
+
+Terminal 3 (producer):
+
+```bash
+python tutorial-2-work-queues/new_task.py "First task."
+python tutorial-2-work-queues/new_task.py "Second task.."
+python tutorial-2-work-queues/new_task.py "Third task..."
+```
+
+To see the redelivery, stop a worker with `CTRL+C` while it works on a task. The other worker gets that task.
