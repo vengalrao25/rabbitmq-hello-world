@@ -1,8 +1,12 @@
-# RabbitMQ Hello World (Python)
+# RabbitMQ Tutorials (Python)
 
-A simple producer and consumer for RabbitMQ. It uses the `pika` library.
+RabbitMQ tutorials in Python. They use the `pika` library.
 
-## How it works
+| Folder | Tutorial |
+| --- | --- |
+| `tutorial-1-hello-world/` | Hello World |
+
+## Tutorial 1: Hello World
 
 ```
 send.py  --->  default exchange ('')  --->  queue "hello"  --->  receive.py
@@ -34,18 +38,18 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run
+## Run tutorial 1
 
 Terminal 1 (consumer):
 
 ```bash
-python receive.py
+python tutorial-1-hello-world/receive.py
 ```
 
 Terminal 2 (producer):
 
 ```bash
-python send.py
+python tutorial-1-hello-world/send.py
 ```
 
 The consumer shows ` [x] Received ...`. Press `CTRL+C` to stop it.
