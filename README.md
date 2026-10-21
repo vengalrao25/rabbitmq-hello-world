@@ -6,6 +6,7 @@ RabbitMQ tutorials in Python. They use the `pika` library.
 | --- | --- |
 | `tutorial-1-hello-world/` | Hello World |
 | `tutorial-2-work-queues/` | Work Queues |
+| `tutorial-3-publish-subscribe/` | Publish/Subscribe |
 
 ## Tutorial 1: Hello World
 
@@ -86,3 +87,37 @@ python tutorial-2-work-queues/new_task.py "Third task..."
 ```
 
 To see the redelivery, stop a worker with `CTRL+C` while it works on a task. The other worker gets that task.
+
+## Tutorial 3: Publish/Subscribe
+
+```
+emit_log.py --> exchange "logs" (fanout) --> amq.gen-A (exclusive) --> receive_logs.py (1)
+                                         --> amq.gen-B (exclusive) --> receive_logs.py (2)
+```
+
+- `emit_log.py` (producer): publishes to the `logs` fanout exchange, not to a queue.
+- `receive_logs.py` (consumer): declares its own server-named, exclusive queue and binds it to `logs`.
+- **Fanout:** the exchange sends a copy of each message to all bound queues. It ignores the routing key.
+- **Server-named queue:** `queue=''` makes the broker create a random name (`amq.gen-...`). The consumer reads it from `result.method.queue`.
+- **Exclusive:** the broker deletes the queue when the consumer connection closes.
+- If no queue is bound, the exchange drops the message.
+
+## Run tutorial 3
+
+Terminal 1 and terminal 2 (consumers):
+
+```bash
+python tutorial-3-publish-subscribe/receive_logs.py
+```
+
+Terminal 3 (producer):
+
+```bash
+python tutorial-3-publish-subscribe/emit_log.py "info: first log"
+```
+
+Both consumers print the same message. To see the bindings:
+
+```bash
+rabbitmqctl list_bindings
+```
