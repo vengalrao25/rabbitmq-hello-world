@@ -7,6 +7,7 @@ RabbitMQ tutorials in Python. They use the `pika` library.
 | `tutorial-1-hello-world/` | Hello World |
 | `tutorial-2-work-queues/` | Work Queues |
 | `tutorial-3-publish-subscribe/` | Publish/Subscribe |
+| `tutorial-5-topics/` | Topics |
 
 ## Tutorial 1: Hello World
 
@@ -120,4 +121,42 @@ Both consumers print the same message. To see the bindings:
 
 ```bash
 rabbitmqctl list_bindings
+```
+
+## Tutorial 5: Topics
+
+```
+emit_log_topic.py --> exchange "topic_logs" (topic) --"kern.*"-----> queue A --> receive_logs_topic.py (1)
+                                                    --"*.critical"--> queue B --> receive_logs_topic.py (2)
+```
+
+- `emit_log_topic.py` (producer): publishes with a routing key made of words split by `.`, for example `kern.critical`.
+- `receive_logs_topic.py` (consumer): binds its server-named queue with one or more patterns.
+- **Topic exchange:** a queue gets a message if the routing key matches one of its binding patterns.
+  - `*` matches exactly 1 word.
+  - `#` matches 0 or more words.
+- `#` alone acts like fanout. A pattern with no `*` or `#` acts like direct.
+
+| Routing key | `kern.*` | `*.critical` | `#` |
+| --- | --- | --- | --- |
+| `kern.critical` | Yes | Yes | Yes |
+| `kern.info` | Yes | No | Yes |
+| `app.critical` | No | Yes | Yes |
+| `kern.disk.critical` | No | No | Yes |
+
+## Run tutorial 5
+
+Terminal 1 and terminal 2 (consumers):
+
+```bash
+python tutorial-5-topics/receive_logs_topic.py "kern.*"
+python tutorial-5-topics/receive_logs_topic.py "*.critical"
+```
+
+Terminal 3 (producer):
+
+```bash
+python tutorial-5-topics/emit_log_topic.py "kern.critical" "A critical kernel error"
+python tutorial-5-topics/emit_log_topic.py "app.critical" "A critical app error"
+python tutorial-5-topics/emit_log_topic.py "kern.info" "Kernel info"
 ```
