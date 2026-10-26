@@ -10,7 +10,10 @@ channel = connection.channel()
 # Topic exchange: matches the routing key against the binding patterns
 channel.exchange_declare(exchange='topic_logs', exchange_type='topic')
 
-# Routing key is words split by "." (for example "kern.critical")
+# ROUTING KEY = exact words split by "." (no "*" or "#" here)
+# Example: python emit_log_topic.py "kern.critical" "Disk full"
+#   -> routing_key = 'kern.critical', message = 'Disk full'
+# With no arguments, the routing key is 'anonymous.info'
 routing_key = sys.argv[1] if len(sys.argv) > 2 else 'anonymous.info'
 message = ' '.join(sys.argv[2:]) or 'Hello World!'
 channel.basic_publish(
